@@ -48,13 +48,14 @@ class SynthCanvas extends React.Component {
         return [real, imag];
     }
 
-    playNote = function(pitchScalar, lengthScalar, speed) {
+    playNote = function(pitch, speed, noteLength, envelope) {
+        console.log(pitch)
         const now = this.audioCtx.currentTime
-        const envelope = this.audioCtx.createGain()
-        envelope.gain.setValueAtTime(0.0, now)
-        envelope.gain.linearRampToValueAtTime(1.0, now + 0.010)
-        //gain.gain.linearRampToValueAtTime(0.0, now + (lengthScalar / 10) / speed)
-        envelope.gain.linearRampToValueAtTime(0.0, now + 3)
+        const envelopeGain = this.audioCtx.createGain()
+        envelopeGain.gain.setValueAtTime(0.0, now)
+        envelopeGain.gain.linearRampToValueAtTime(1.0, now + envelope.attack)
+        envelopeGain.gain.linearRampToValueAtTime(envelope.sustain, now + (envelope.attack + envelope.decay))
+        envelopeGain.gain.linearRampToValueAtTime(0.0, now + (noteLength + envelope.release))
 
         const oscillator = this.audioCtx.createOscillator();
         let wave;
@@ -69,14 +70,10 @@ class SynthCanvas extends React.Component {
         }, function(err) {
             console.log(err);
         });
-        oscillator.frequency.setValueAtTime(pitchScalar * 5000, now)
-        //oscillator.connect(this.audioCtx.destination);
-        //oscillator.type = 'sine'
-        oscillator.connect(envelope).connect(this.audioCtx.destination);
+        oscillator.frequency.setValueAtTime(pitch, now)
+        oscillator.connect(envelopeGain).connect(this.audioCtx.destination);
         oscillator.start(now)
-
-        //oscillator.stop(now + (lengthScalar / 50) / speed);
-        oscillator.stop(now + 3);
+        oscillator.stop(now + (noteLength + envelope.release));
         return {envelope, oscillator}
     }
 
@@ -88,7 +85,8 @@ class SynthCanvas extends React.Component {
         const playhead = this.props.playhead;
         const flowers = this.props.flowers;
         const canvas = this.canvasRef.current;
-        const speed = this.props.speed;
+        const audioParams = this.props.audioParams;
+        const envelope = this.props.envelope;
         const ctx = canvas.getContext('2d');
         const width = this.props.width;
         const height = canvas.height;
@@ -98,13 +96,16 @@ class SynthCanvas extends React.Component {
             let flower = flowers[i];
             ctx.globalAlpha = flower.alpha;
             let x = flower.normalX * width;
-            let y = flower.normalY * height;
+            let y = ((flower.normalY) * height);
             let r = flower.radius;
             ctx.drawImage(this.image, x - r, y - r, r * 2, r * 2);
 
             // Check for note
-            if (flower.normalX * width <= playhead && playhead < flower.normalX * width + speed) {
-                this.playNote(1 - flower.normalY, flower.radius, speed)
+            if (flower.normalX * width <= playhead && playhead < flower.normalX * width + audioParams.speed) {
+                console.log(flower.normalY)
+                let pitch = 16.35 * Math.pow(audioParams.maxFreq / 16.35, (1 - flower.normalY))
+                let noteLength = flower.radius / 20.0;
+                this.playNote(pitch, audioParams.speed, noteLength, envelope)
             }
         }
         ctx.strokeStyle = "#FF0000";

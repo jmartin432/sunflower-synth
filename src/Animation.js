@@ -20,7 +20,7 @@ class Animation extends React.Component {
   }
 
   updateAnimationState() {
-    this.setState(prevState => ({ playhead: prevState.playhead + this.props.speed }));
+    this.setState(prevState => ({ playhead: prevState.playhead + this.props.audioParams.speed }));
     if (this.state.playhead >= this.props.width){
       this.setState({playhead: 0})
     }
@@ -32,7 +32,7 @@ class Animation extends React.Component {
   }
 
   render() {
-    return <SynthCanvas audioContext={this.props.audioContext} width={this.props.width} height={this.props.height} playhead={this.state.playhead} speed={this.props.speed} flowers={this.props.flowers}/>;
+    return <SynthCanvas audioContext={this.props.audioContext} width={this.props.width} height={this.props.height} playhead={this.state.playhead} audioParams={this.props.audioParams} envelope={this.props.envelope} flowers={this.props.flowers}/>;
   }
 }
 

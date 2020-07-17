@@ -12,9 +12,24 @@
 }
 
 #menu {
+  border: 2px solid blueviolet;
+  padding: 5px;
+  text-align: center;
   z-index: 10;
 }
 
 #synth-canvas {
   z-index: 0;
+}
+
+input {
+  display: block;
+}
+
+p {
+  font-size: 10px;
+}
+
+#menu p {
+  margin: 10px 0px 2px 0px;
 }

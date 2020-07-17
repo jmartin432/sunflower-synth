@@ -14,6 +14,11 @@ class SynthBoard extends React.Component {
         this.handleMouseUp = this.handleMouseUp.bind(this);
         this.clearAll = this.clearAll.bind(this);
         this.updateSpeed = this.updateSpeed.bind(this);
+        this.updateMaxFreq = this.updateMaxFreq.bind(this);
+        this.updateAttack = this.updateAttack.bind(this);
+        this.updateDecay = this.updateDecay.bind(this);
+        this.updateSustain = this.updateSustain.bind(this);
+        this.updateRelease = this.updateRelease.bind(this);
         this.activateMenu = this.activateMenu.bind(this);
         this.state = {
             width: window.innerWidth,
@@ -23,7 +28,16 @@ class SynthBoard extends React.Component {
             creating: false,
             deleting: false,
             index: null,
-            speed: 1.0,
+            envelope: {
+                attack: 0.1,
+                decay: 0.1,
+                sustain: 1.0,
+                release: 0.1,
+            },
+            audioParams: {
+                speed: 1.0,
+                maxFreq: 130.81
+            },
             onMenu: false,
             flowers: []
         }
@@ -115,7 +129,39 @@ class SynthBoard extends React.Component {
     }
 
     updateSpeed (event) {
-        this.setState({speed: parseFloat(event.target.value)});
+        let audioParams = this.state.audioParams
+        audioParams.speed = parseFloat(event.target.value)
+        this.setState({audioParams: audioParams});
+    }
+
+    updateMaxFreq (event) {
+        let audioParams = this.state.audioParams
+        audioParams.maxFreq = parseFloat(event.target.value)
+        this.setState({audioParams: audioParams});
+    }
+
+    updateAttack (event) {
+        let envelope = this.state.envelope
+        envelope.attack = parseFloat(event.target.value)
+        this.setState({envelope: envelope});
+    }
+
+    updateDecay (event) {
+        let envelope = this.state.envelope
+        envelope.decay = parseFloat(event.target.value)
+        this.setState({envelope: envelope});
+    }
+
+    updateSustain (event) {
+        let envelope = this.state.envelope
+        envelope.sustain = parseFloat(event.target.value)
+        this.setState({envelope: envelope});
+    }
+
+    updateRelease (event) {
+        let envelope = this.state.envelope
+        envelope.release = parseFloat(event.target.value)
+        this.setState({envelope: envelope});
     }
 
     activateMenu (event) {
@@ -126,12 +172,23 @@ class SynthBoard extends React.Component {
         return (
             <div id={"synth-board"}>
                 <div id={"menu"} onMouseOver={this.activateMenu} onMouseOut={this.activateMenu}>
+                    <p>Max Frequency</p>
+                    <input type="range" min="16.35" max="523.25" step="0.1" defaultValue="130.81" className="slider" id="maxFreq-slider" onChange={this.updateMaxFreq} ></input>
+                    <p>Speed</p>
+                    <input type="range" min="0" max="3" step="0.1" defaultValue="1.0" className="slider" id="speed-slider" onChange={this.updateSpeed} ></input>
+                    <p>Attack</p>
+                    <input type="range" min=".090" max="1.0" step=".001" defaultValue=".1" className="slider" id="attack-slider" onChange={this.updateAttack} ></input>
+                    <p>Decay</p>
+                    <input type="range" min=".090" max="1.0" step=".001" defaultValue=".1" className="slider" id="decay-slider" onChange={this.updateDecay} ></input>
+                    <p>Sustain</p>
+                    <input type="range" min="0" max="1.0" step="0.01" defaultValue="1.0" className="slider" id="sustain-slider" onChange={this.updateSustain} ></input>
+                    <p>Release</p>
+                    <input type="range" min=".090" max="1.0" step=".001" defaultValue=".1" className="slider" id="release-slider" onChange={this.updateRelease} ></input>
                     <button onClick={this.clearAll}>
                         Clear
                     </button>
-                    <input type="range" min="0" max="3" step="0.1" defaultValue="1.0" className="slider" id="speed-slider" onChange={this.updateSpeed} ></input>
                 </div>
-                <Animation audioContext={this.audioContext} width={this.state.width} height={this.state.height} speed={this.state.speed} flowers={this.state.flowers}/>
+                <Animation audioContext={this.audioContext} width={this.state.width} height={this.state.height} audioParams={this.state.audioParams} envelope={this.state.envelope} flowers={this.state.flowers}/>
             </div>
         )
     }
