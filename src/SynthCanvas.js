@@ -48,13 +48,22 @@ class SynthCanvas extends React.Component {
         return [real, imag];
     }
 
-    playNote = function(pitch, speed, noteLength, envelope) {
+    playNote = function(pitch, noteLength, amplitude, envelope) {
         const now = this.audioCtx.currentTime
         const envelopeGain = this.audioCtx.createGain()
         envelopeGain.gain.setValueAtTime(0.0, now)
-        envelopeGain.gain.linearRampToValueAtTime(1.0, now + envelope.attack)
-        envelopeGain.gain.linearRampToValueAtTime(envelope.sustain, now + (envelope.attack + envelope.decay))
-        envelopeGain.gain.linearRampToValueAtTime(0.0, now + (noteLength + envelope.release))
+        if (envelope.attack >= noteLength) {
+            envelopeGain.gain.linearRampToValueAtTime(noteLength * (amplitude / envelope.attack), now + noteLength)
+            envelopeGain.gain.linearRampToValueAtTime(0.0, now + (noteLength + envelope.release))
+        } else if (envelope.attack + envelope.decay >= noteLength) {
+            envelopeGain.gain.linearRampToValueAtTime(amplitude, now + envelope.attack)
+            envelopeGain.gain.linearRampToValueAtTime(((amplitude - (envelope.sustain * amplitude)) / envelope.decay) * (noteLength - envelope.attack) + amplitude, now + noteLength)
+            envelopeGain.gain.linearRampToValueAtTime(0.0, now + (noteLength + envelope.release))
+        } else {
+            envelopeGain.gain.linearRampToValueAtTime(amplitude, now + envelope.attack)
+            envelopeGain.gain.linearRampToValueAtTime(amplitude * envelope.sustain, now + (envelope.attack +  envelope.decay))
+            envelopeGain.gain.linearRampToValueAtTime(0.0, now + (noteLength + envelope.release))
+        }
 
         const oscillator = this.audioCtx.createOscillator();
         let wave;
@@ -112,12 +121,17 @@ class SynthCanvas extends React.Component {
                 this.drawCircles(ctx, x, y, 'red')
             } else if (this.props.action === "move") {
                 this.drawCircles(ctx, x, y, 'yellow')
+            } else if (this.props.action === "resize") {
+                this.drawCircles(ctx, x, y, 'green')
             }
             // Check for note
             if (flower.normalX * width <= playhead && playhead < flower.normalX * width + audioParams.speed) {
                 let pitch = 16.35 * Math.pow(audioParams.maxFreq / 16.35, (1 - flower.normalY))
-                let noteLength = flower.radius / 20.0;
-                this.playNote(pitch, audioParams.speed, noteLength, envelope)
+                let amplitude = flower.radius / 100.0;
+                // NewValue = (((OldValue - OldMin) * (NewMax - NewMin)) / (OldMax - OldMin)) + NewMin
+                // mapping 0 - 3 speed slider to 3.5 - .5 notelength, fast speed shorter notes
+                let noteLength = -1.0 * ((((audioParams.speed - 0.0) * (-0.5 - -3.5)) / (3.0 - 0.0)) + -3.5)
+                this.playNote(pitch, noteLength, amplitude, envelope)
             }
         }
         ctx.strokeStyle = "#FF0000";
