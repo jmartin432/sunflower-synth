@@ -3,30 +3,41 @@
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
+  z-index: 10;
 }
 
-#menu, #synth-canvas{
+.menu {
   position: fixed;
+  width: 150px;
+  border: 2px solid blueviolet;
+  padding: 5px;
+  text-align: center;
+  z-index: 20;
+}
+
+#adsr-menu {
   top: 0;
   left: 0;
 }
 
-#menu {
-  border: 2px solid blueviolet;
-  padding: 5px;
-  text-align: center;
-  z-index: 10;
+#flower-menu {
+  top: 0;
+  left: 170px;
 }
 
 #synth-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
   z-index: 0;
 }
 
 input {
   display: block;
+  margin: 0 auto;
 }
 
-p {
+p, label{
   font-size: 10px;
 }
 

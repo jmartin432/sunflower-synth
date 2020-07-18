@@ -8,6 +8,8 @@ class SynthBoard extends React.Component {
 
     constructor(props){
         super(props);
+        this.onMenu = null
+        this.flowerIndex = null
         this.audioContext = new (window.AudioContext || window.webkitAudioContext)()
         this.updateBoardDimensions = this.updateBoardDimensions.bind(this);
         this.handleMouseDown = this.handleMouseDown.bind(this);
@@ -19,15 +21,12 @@ class SynthBoard extends React.Component {
         this.updateDecay = this.updateDecay.bind(this);
         this.updateSustain = this.updateSustain.bind(this);
         this.updateRelease = this.updateRelease.bind(this);
+        this.handleActionChange = this.handleActionChange.bind(this);
         this.activateMenu = this.activateMenu.bind(this);
         this.state = {
             width: window.innerWidth,
             height: window.innerHeight,
-            moving: false,
-            sizing: false,
-            creating: false,
-            deleting: false,
-            index: null,
+            action: 'add',
             envelope: {
                 attack: 0.1,
                 decay: 0.1,
@@ -38,7 +37,6 @@ class SynthBoard extends React.Component {
                 speed: 1.0,
                 maxFreq: 130.81
             },
-            onMenu: false,
             flowers: []
         }
     }
@@ -46,10 +44,7 @@ class SynthBoard extends React.Component {
     componentDidMount () {
         this.updateBoardDimensions();
         window.addEventListener('resize', this.updateBoardDimensions);
-        //document.addEventListener("click", this.handleClick, false);
         document.addEventListener("keydown", this.handleKey, false);
-        document.addEventListener("mousedown", this.handleMouseDown, false);
-        document.addEventListener("mouseup", this.handleMouseUp, false);
     }
 
     updateBoardDimensions() {
@@ -68,60 +63,83 @@ class SynthBoard extends React.Component {
     }
 
     handleMouseDown = (event) => {
-        if (!this.state.onMenu) {
-            let normalMouseX = event.clientX / this.state.width;
-            let normalMouseY = event.clientY / this.state.height;
-            for (let i = this.state.flowers.length - 1; i >= 0; i--) {
-                let xDistance = Math.pow((normalMouseX - this.state.flowers[i].normalX), 2);
-                let yDistance = Math.pow((normalMouseY - this.state.flowers[i].normalY), 2);
-                if ((xDistance + yDistance) < .001) {
-                    console.log("M: ", i);
-                    let flowers = [...this.state.flowers];
-                    let flower = flowers[i];
-                    flower.alpha = 0.3;
-                    flowers[i] = flower;
-                    this.setState({moving: true, index: i, flowers: flowers});
-                    return;
-                }
-                if (0.001 <= (xDistance + yDistance) && (xDistance + yDistance) < 0.002) {
-                    console.log("S: ", i);
-                    let flowers = [...this.state.flowers];
-                    let flower = flowers[i];
-                    flower.alpha = 0.7;
-                    flowers[i] = flower;
-                    this.setState({sizing: true, index: i, flowers: flowers});
+        if (this.onMenu) return;
+        let mouseX = event.clientX
+        let mouseY = event.clientY
+        let normalMouseX = event.clientX / this.state.width;
+        let normalMouseY = event.clientY / this.state.height;
+        if (this.state.action === 'add') {
+            this.state.flowers.push({'normalX': normalMouseX, 'normalY': normalMouseY, 'radius': 50, 'alpha': 0.3})
+            this.flowerIndex = this.state.flowers.length - 1;
+            document.getElementById("synth-board").addEventListener('mousemove', this.handleMouseMove)
+            return;
+        }
+        let flowers = [...this.state.flowers];
+        if (this.state.action === 'move') {
+            if (flowers.length === 0) return
+            for (let i=flowers.length-1; i>=0; i--){
+                let flowerX = flowers[i].normalX * this.state.width;
+                let flowerY = flowers[i].normalY * this.state.height;
+                if (Math.hypot((flowerX - mouseX), (flowerY - mouseY)) < 20.0) {
+                    this.flowerIndex = i;
+                    flowers[i].alpha = 0.3
+                    this.setState({flowers})
+                    document.getElementById("synth-board").addEventListener('mousemove', this.handleMouseMove)
                     return;
                 }
             }
-            this.setState({creating: true});
+        }
+        if (this.state.action === 'delete') {
+            if (flowers.length === 0) return
+            for (let i=flowers.length-1; i>=0; i--){
+                let flowerX = flowers[i].normalX * this.state.width;
+                let flowerY = flowers[i].normalY * this.state.height;
+                if (Math.hypot((flowerX - mouseX), (flowerY - mouseY)) < 20.0) {
+                    this.flowerIndex = i;
+                    return;
+                }
+            }
         }
     }
 
+    handleMouseMove = (event) => {
+        if (this.flowerIndex === null) return
+        let normalMouseX = event.clientX / this.state.width;
+        let normalMouseY = event.clientY / this.state.height;
+        let flowers = [...this.state.flowers];
+        let flower = flowers[this.flowerIndex];
+        flower.normalX = normalMouseX;
+        flower.normalY = normalMouseY;
+        flowers[this.flowerIndex] = flower;
+        this.setState({flowers})
+    }
+
     handleMouseUp = (event) => {
-        if (this.state.creating) {
-            let normalX = event.clientX / this.state.width;
-            let normalY = event.clientY / this.state.height;
-            this.state.flowers.push({'normalX': normalX, 'normalY': normalY, 'radius': 50, 'alpha': 1.0})
-        }
-        if (this.state.moving) {
-            let normalX = event.clientX / this.state.width;
-            let normalY = event.clientY / this.state.height;
-            let flowers = [...this.state.flowers];
-            let flower = flowers[this.state.index];
+        if (this.onMenu) return;
+        let mouseX = event.clientX;
+        let mouseY = event.clientY;
+        let flowers = [...this.state.flowers];
+        let flower = flowers[this.flowerIndex];
+        if (this.state.action === 'add' || this.state.action === 'move') {
+            if (this.state.action === 'move' && flowers.length === 0) return;
+            if (this.state.action === 'move' && this.flowerIndex === null) return;
             flower.alpha = 1.0;
-            flower.normalX = normalX;
-            flower.normalY = normalY;
-            flowers[this.state.index] = flower;
+            flowers[this.flowerIndex] = flower;
+            this.flowerIndex = null;
             this.setState({flowers})
+            document.getElementById("synth-board").removeEventListener('mousemove', this.handleMouseMove)
+            return;
         }
-        if (this.state.sizing) {
-            let flowers = [...this.state.flowers];
-            let flower = flowers[this.state.index];
-            flower.alpha = 1.0;
-            flowers[this.state.index] = flower;
-            this.setState({flowers})
+        if (this.state.action === 'delete') {
+            if (this.flowerIndex === null) return
+            let flowerX = flowers[this.flowerIndex].normalX * this.state.width;
+            let flowerY = flowers[this.flowerIndex].normalY * this.state.height;
+            if (Math.hypot((flowerX - mouseX), (flowerY - mouseY)) < 20.0) {
+                flowers.splice(this.flowerIndex, 1);
+                this.flowerIndex = null;
+                this.setState({flowers})
+            }
         }
-        this.setState({creating: false, moving: false, sizing: false, index: null})
     }
 
     clearAll () {
@@ -165,13 +183,44 @@ class SynthBoard extends React.Component {
     }
 
     activateMenu (event) {
-        this.setState({onMenu: event.type === "mouseover"});
+        this.onMenu = (event.type === "mouseover")
+    }
+
+    handleActionChange (event) {
+        this.setState({action: event.target.id})
+    }
+
+    menuDragStart(event) {
+        let target = event.currentTarget
+        let style = window.getComputedStyle(event.target, null);
+        let id = target.id
+        let mouseX = event.pageX
+        let mouseY = event.pageY
+        let offsetX = event.clientX - parseInt(style.getPropertyValue("left").replace('px', ''))
+        let offsetY = event.clientY - parseInt(style.getPropertyValue("top").replace('px', ''))
+        let data = (id + ',' + mouseX + ',' + mouseY + ',' + offsetX + ',' + offsetY)
+        event.dataTransfer.setData("text/plain", data)
+    }
+
+    menuDragEnd (event) {
+    }
+
+    allowDropMenu(event) {
+        event.preventDefault()
+    }
+
+    dropMenu(event) {
+        let data = event.dataTransfer.getData("text/plain").split(',');
+        let menu = document.getElementById(data[0])
+        menu.style.left = (event.pageX - parseInt(data[3])) + 'px';
+        menu.style.top = (event.pageY - parseInt(data[4])) + 'px';
+        event.preventDefault()
     }
 
     render() {
         return (
-            <div id={"synth-board"}>
-                <div id={"menu"} onMouseOver={this.activateMenu} onMouseOut={this.activateMenu}>
+            <div id={"synth-board"} draggable={false} onDragOver={this.allowDropMenu} onDrop={this.dropMenu} onMouseDown={this.handleMouseDown} onMouseUp={this.handleMouseUp}>
+                <div className={"menu"} id={"adsr-menu"} draggable={true} onDragStart={this.menuDragStart} onDragEnd={this.menuDragEnd} onMouseOver={this.activateMenu} onMouseOut={this.activateMenu}>
                     <p>Max Frequency</p>
                     <input type="range" min="16.35" max="523.25" step="0.1" defaultValue="130.81" className="slider" id="maxFreq-slider" onChange={this.updateMaxFreq} ></input>
                     <p>Speed</p>
@@ -184,11 +233,24 @@ class SynthBoard extends React.Component {
                     <input type="range" min="0" max="1.0" step="0.01" defaultValue="1.0" className="slider" id="sustain-slider" onChange={this.updateSustain} ></input>
                     <p>Release</p>
                     <input type="range" min=".090" max="1.0" step=".001" defaultValue=".1" className="slider" id="release-slider" onChange={this.updateRelease} ></input>
-                    <button onClick={this.clearAll}>
-                        Clear
-                    </button>
                 </div>
-                <Animation audioContext={this.audioContext} width={this.state.width} height={this.state.height} audioParams={this.state.audioParams} envelope={this.state.envelope} flowers={this.state.flowers}/>
+                <div className={"menu"} id={"flower-menu"} draggable={true} onDragStart={this.menuDragStart} onDragEnd={this.menuDragEnd} onMouseOver={this.activateMenu} onMouseOut={this.activateMenu}>
+                    <label htmlFor="add">Add</label><br></br>
+                    <input type="radio" id="add" name="action" value="add" checked={this.state.action === 'add'} onChange={this.handleActionChange}></input>
+                    <label htmlFor="move">Move</label><br></br>
+                    <input type="radio" id="move" name="action" value="move" checked={this.state.action === 'move'} onChange={this.handleActionChange}></input>
+                    <label htmlFor="delete">Delete</label><br></br>
+                    <input type="radio" id="delete" name="action" value="delete" checked={this.state.action === 'delete'} onChange={this.handleActionChange}></input>
+                    <button onClick={this.clearAll}>Clear</button>
+                </div>
+                <Animation audioContext={this.audioContext}
+                           width={this.state.width}
+                           height={this.state.height}
+                           audioParams={this.state.audioParams}
+                           envelope={this.state.envelope}
+                           flowers={this.state.flowers}
+                           action={this.state.action}
+                />
             </div>
         )
     }

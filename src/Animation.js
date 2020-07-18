@@ -32,7 +32,16 @@ class Animation extends React.Component {
   }
 
   render() {
-    return <SynthCanvas audioContext={this.props.audioContext} width={this.props.width} height={this.props.height} playhead={this.state.playhead} audioParams={this.props.audioParams} envelope={this.props.envelope} flowers={this.props.flowers}/>;
+    return <SynthCanvas
+        audioContext={this.props.audioContext}
+        width={this.props.width}
+        height={this.props.height}
+        playhead={this.state.playhead}
+        audioParams={this.props.audioParams}
+        envelope={this.props.envelope}
+        flowers={this.props.flowers}
+        action={this.props.action}
+    />;
   }
 }
 

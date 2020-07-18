@@ -49,7 +49,6 @@ class SynthCanvas extends React.Component {
     }
 
     playNote = function(pitch, speed, noteLength, envelope) {
-        console.log(pitch)
         const now = this.audioCtx.currentTime
         const envelopeGain = this.audioCtx.createGain()
         envelopeGain.gain.setValueAtTime(0.0, now)
@@ -81,6 +80,16 @@ class SynthCanvas extends React.Component {
         this.image.src = sunflower;
     }
 
+    drawCircles(ctx, x, y, color) {
+        ctx.beginPath()
+        ctx.arc(x, y, 20, 0, 2 * Math.PI)
+        ctx.globalAlpha = 0.3;
+        ctx.fillStyle = color
+        ctx.fill()
+        ctx.globalAlpha = 1.0;
+        ctx.closePath()
+    }
+
     componentDidUpdate (prevProps, prevState, snapshot) {
         const playhead = this.props.playhead;
         const flowers = this.props.flowers;
@@ -96,13 +105,16 @@ class SynthCanvas extends React.Component {
             let flower = flowers[i];
             ctx.globalAlpha = flower.alpha;
             let x = flower.normalX * width;
-            let y = ((flower.normalY) * height);
+            let y = flower.normalY * height;
             let r = flower.radius;
             ctx.drawImage(this.image, x - r, y - r, r * 2, r * 2);
-
+            if (this.props.action === "delete") {
+                this.drawCircles(ctx, x, y, 'red')
+            } else if (this.props.action === "move") {
+                this.drawCircles(ctx, x, y, 'yellow')
+            }
             // Check for note
             if (flower.normalX * width <= playhead && playhead < flower.normalX * width + audioParams.speed) {
-                console.log(flower.normalY)
                 let pitch = 16.35 * Math.pow(audioParams.maxFreq / 16.35, (1 - flower.normalY))
                 let noteLength = flower.radius / 20.0;
                 this.playNote(pitch, audioParams.speed, noteLength, envelope)
