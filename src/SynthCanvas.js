@@ -5,141 +5,89 @@ class SynthCanvas extends React.Component {
 
     constructor(props){
         super(props);
-        this.notes = [];
-        this.audioCtx = this.props.audioContext;
-        this.masterGain = this.audioCtx.createGain();
-        this.masterGain.connect(this.audioCtx.destination)
-        this.masterGain.gain.setValueAtTime(1.0, this.audioCtx.currentTime)
+        this.handleMouseMove = this.handleMouseMove.bind(this);
         this.canvasRef = React.createRef();
         this.image = new Image();
-    }
+        this.state = {
+            canvasMouse: {
+                mouseX: 0,
+                mouseY: 0,
 
-    createWaveForm () {
-        let real = new Float32Array(12);
-        let imag = new Float32Array(12);
-
-        real[0] = 0;
-        real[1] = 0.4;
-        real[2] = 0.4;
-        real[3] = 1;
-        real[4] = 1;
-        real[5] = 1;
-        real[6] = 0.3;
-        real[7] = 0.7;
-        real[8] = 0.6;
-        real[9] = 0.5;
-        real[10] = 0.9;
-        real[11] = 0.8;
-
-        // imag[0] = Math.random();
-        // imag[1] = Math.random();
-        // imag[2] = Math.random();
-        // imag[3] = Math.random();
-        // imag[4] = Math.random();
-        // imag[5] = Math.random();
-        // imag[6] = Math.random();
-        // imag[7] = Math.random();
-        // imag[8] = Math.random();
-        // imag[9] = Math.random();
-        // imag[10] = Math.random();
-        // imag[11] = Math.random();
-
-
-        return [real, imag];
-    }
-
-    playNote = function(pitch, noteLength, amplitude, envelope) {
-        const now = this.audioCtx.currentTime
-        const envelopeGain = this.audioCtx.createGain()
-        envelopeGain.gain.setValueAtTime(0.0, now)
-        if (envelope.attack >= noteLength) {
-            envelopeGain.gain.linearRampToValueAtTime(noteLength * (amplitude / envelope.attack), now + noteLength)
-            envelopeGain.gain.linearRampToValueAtTime(0.0, now + (noteLength + envelope.release))
-        } else if (envelope.attack + envelope.decay >= noteLength) {
-            envelopeGain.gain.linearRampToValueAtTime(amplitude, now + envelope.attack)
-            envelopeGain.gain.linearRampToValueAtTime(((amplitude - (envelope.sustain * amplitude)) / envelope.decay) * (noteLength - envelope.attack) + amplitude, now + noteLength)
-            envelopeGain.gain.linearRampToValueAtTime(0.0, now + (noteLength + envelope.release))
-        } else {
-            envelopeGain.gain.linearRampToValueAtTime(amplitude, now + envelope.attack)
-            envelopeGain.gain.linearRampToValueAtTime(amplitude * envelope.sustain, now + (envelope.attack +  envelope.decay))
-            envelopeGain.gain.linearRampToValueAtTime(0.0, now + (noteLength + envelope.release))
+            }
         }
-
-        const oscillator = this.audioCtx.createOscillator();
-        let wave;
-        let waveParts = new Promise ( (resolve, reject) => {
-            let w = this.createWaveForm();
-            resolve(w);
-        });
-
-        waveParts.then(result => {
-            wave = this.audioCtx.createPeriodicWave(result[0], result[1]);
-            oscillator.setPeriodicWave(wave);
-        }, function(err) {
-            console.log(err);
-        });
-        oscillator.frequency.setValueAtTime(pitch, now)
-        oscillator.connect(envelopeGain).connect(this.audioCtx.destination);
-        oscillator.start(now)
-        oscillator.stop(now + (noteLength + envelope.release));
-        return {envelope, oscillator}
     }
 
     componentDidMount () {
         this.image.src = sunflower;
     }
 
-    drawCircles(ctx, x, y, color) {
+    handleMouseMove = (event) => {
+        this.setState({
+            canvasMouse: {
+                mouseX: event.clientX,
+                mouseY: event.clientY
+            }
+        })
+    }
+
+    drawCircles(ctx, x, y, ) {
+        ctx.globalAlpha = 0.3;
+        ctx.beginPath()
+        ctx.arc(x, y, 60, 0, 2 * Math.PI)
+        ctx.fillStyle = 'yellow'
+        ctx.fill()
+        ctx.closePath()
+        ctx.beginPath()
+        ctx.arc(x, y, 40, 0, 2 * Math.PI)
+        ctx.fillStyle = 'green'
+        ctx.fill()
+        ctx.closePath()
         ctx.beginPath()
         ctx.arc(x, y, 20, 0, 2 * Math.PI)
-        ctx.globalAlpha = 0.3;
-        ctx.fillStyle = color
+        ctx.fillStyle = 'red'
         ctx.fill()
-        ctx.globalAlpha = 1.0;
         ctx.closePath()
+        ctx.globalAlpha = 1.0;
     }
 
     componentDidUpdate (prevProps, prevState, snapshot) {
         const playhead = this.props.playhead;
         const flowers = this.props.flowers;
         const canvas = this.canvasRef.current;
-        const audioParams = this.props.audioParams;
-        const envelope = this.props.envelope;
         const ctx = canvas.getContext('2d');
-        const width = this.props.width;
+        const width = this.props.windowDims.width;
         const height = canvas.height;
+        const index = this.props.activeFlower.index;
+        const mouseX = this.state.canvasMouse.mouseX;
+        const mouseY = this.state.canvasMouse.mouseY;
         ctx.clearRect(0, 0, width, height);
         ctx.save();
+        let hovering = false;
         for (let i = 0; i < flowers.length; i++) {
             let flower = flowers[i];
-            ctx.globalAlpha = flower.alpha;
             let x = flower.normalX * width;
             let y = flower.normalY * height;
             let r = flower.radius;
-            ctx.drawImage(this.image, x - r, y - r, r * 2, r * 2);
-            if (this.props.action === "delete") {
-                this.drawCircles(ctx, x, y, 'red')
-            } else if (this.props.action === "move") {
-                this.drawCircles(ctx, x, y, 'yellow')
-            } else if (this.props.action === "resize") {
-                this.drawCircles(ctx, x, y, 'green')
+            let distanceSqrd = Math.pow((mouseX - x), 2) + Math.pow((mouseY - y), 2)
+            if (i === index || (distanceSqrd <= 3600 && !hovering)) {
+                ctx.globalAlpha = 0.3
+                hovering = true;
+            } else {
+                ctx.globalAlpha = 1.0
             }
-            // Check for note
-            if (flower.normalX * width <= playhead && playhead < flower.normalX * width + audioParams.speed) {
-                let pitch = 16.35 * Math.pow(audioParams.maxFreq / 16.35, (1 - flower.normalY))
-                let amplitude = flower.radius / 100.0;
-                // NewValue = (((OldValue - OldMin) * (NewMax - NewMin)) / (OldMax - OldMin)) + NewMin
-                // mapping 0 - 3 speed slider to 3.5 - .5 notelength, fast speed shorter notes
-                let noteLength = -1.0 * ((((audioParams.speed - 0.0) * (-0.5 - -3.5)) / (3.0 - 0.0)) + -3.5)
-                this.playNote(pitch, noteLength, amplitude, envelope)
+            ctx.drawImage(this.image, x - r, y - r, r * 2, r * 2);
+            if ((i === index || (distanceSqrd <= 3600 && hovering)) && !flower.fresh) {
+                console.log(flower.fresh)
+                this.drawCircles(ctx, x, y)
             }
         }
+        ctx.globalAlpha = 1.0;
         ctx.strokeStyle = "#FF0000";
         ctx.beginPath();
         ctx.moveTo(playhead, height);
         ctx.lineTo(playhead, 0);
         ctx.stroke();
-        //ctx.restore();
+        ctx.restore();
     }
 
     componentWillUnmount () {
@@ -148,8 +96,7 @@ class SynthCanvas extends React.Component {
     render() {
         return (
             <div>
-                <canvas id="synth-canvas" width={this.props.width} height={this.props.height} ref={this.canvasRef} />
-                {/*<Audio id="synth-note" notes={this.notes} />*/}
+                <canvas id="synth-canvas" width={this.props.windowDims.width} height={this.props.windowDims.height} ref={this.canvasRef} onMouseMove={this.handleMouseMove} />
             </div>
         )
     }

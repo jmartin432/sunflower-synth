@@ -4,16 +4,6 @@ import './index.css';
 import App from './App';
 import * as serviceWorker from './serviceWorker';
 
-
-class SynthBoard extends React.Component {
-    render() {
-        return (
-            <div className={"synth-board"}>
-            </div>
-        )
-    }
-}
-
 ReactDOM.render(
   <React.StrictMode>
     <App />

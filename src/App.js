@@ -1,31 +1,34 @@
 import React from 'react';
-import logo from './static/sunflower.png';
 import './App.css';
-import SynthBoard from './SynthBoard';
+import ControlBoard from './ControlBoard';
 
 class App extends React.Component{
 
-  render() {
+    constructor(props){
+        super(props)
+        this.updateBoardDimensions = this.updateBoardDimensions.bind(this);
+        this.state = {
+            windowDims: {
+                width: window.innerWidth,
+                height: window.innerHeight
+            }
+        }
+    }
+
+    componentDidMount () {
+        this.updateBoardDimensions();
+        window.addEventListener('resize', this.updateBoardDimensions);
+    }
+
+    updateBoardDimensions = (event) => {
+        this.setState({ windowDims: {width: window.innerWidth, height: window.innerHeight }});
+    }
+
+    render() {
         return (
-            <SynthBoard />
+            <ControlBoard windowDims={this.state.windowDims} />
         )
     }
-        // <div className="App">
-        //   <header className="App-header">
-        //     <img src={logo} className="App-logo" alt="logo" />
-        //     <p>
-        //       Edit <code>src/App.js</code> and save to reload.
-        //     </p>
-        //     <a
-        //       className="App-link"
-        //       href="https://reactjs.org"
-        //       target="_blank"
-        //       rel="noopener noreferrer"
-        //     >
-        //       Learn React
-        //     </a>
-        //   </header>
-        // </div>
 }
 
 export default App;

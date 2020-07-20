@@ -1,4 +1,4 @@
-html, body, #app, #app>div, #root, #synth-board, #synth-canvas{
+html, body, #app, #app>div, #root, #control-board, #synth-canvas{
   height: 100%;
 }
 
