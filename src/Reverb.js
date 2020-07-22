@@ -1,3 +1,0 @@
-class Reverb extends Effect {
-
-}

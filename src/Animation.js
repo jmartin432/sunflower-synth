@@ -2,8 +2,6 @@ import React from 'react';
 import './ControlBoard.css';
 import SynthCanvas from './SynthCanvas';
 
-let deepEqual = require('deep-equal')
-
 class Animation extends React.Component {
     constructor(props) {
         super(props);

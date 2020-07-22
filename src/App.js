@@ -2,8 +2,6 @@ import React from 'react';
 import './App.css';
 import ControlBoard from './ControlBoard';
 
-let deepEqual = require('deep-equal')
-
 class App extends React.Component{
 
     constructor(props){
@@ -23,8 +21,6 @@ class App extends React.Component{
     }
 
     componentDidUpdate(prevProps, prevState, snapshot) {
-        // leave this for test in production
-        console.log('app update: ')
     }
 
     updateBoardDimensions = (event) => {
@@ -32,8 +28,6 @@ class App extends React.Component{
     }
 
     render() {
-        // leave this for test in production
-        console.log('app render: ')
         return (
             <ControlBoard
                 width={this.state.windowDims.width}

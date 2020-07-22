@@ -1,5 +1,4 @@
 import React from 'react';
-let deepEqual = require('deep-equal')
 
 class SynthEngine extends React.Component {
 
