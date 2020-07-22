@@ -1,6 +1,10 @@
-import React, {useState} from 'react';
+import React from 'react';
 import './ControlBoard.css';
 import Animation from "./Animation";
+import SynthEngine from "./SynthEngine";
+
+let deepEqual = require('deep-equal')
+
 
 class ControlBoard extends React.Component {
 
@@ -8,6 +12,7 @@ class ControlBoard extends React.Component {
         super(props);
         this.onMenu = null
         this.handleMouseDown = this.handleMouseDown.bind(this);
+        this.handleMouseMove = this.handleMouseMove.bind(this);
         this.handleMouseUp = this.handleMouseUp.bind(this);
         this.clearAll = this.clearAll.bind(this);
         this.updateSpeed = this.updateSpeed.bind(this);
@@ -16,7 +21,7 @@ class ControlBoard extends React.Component {
         this.updateDecay = this.updateDecay.bind(this);
         this.updateSustain = this.updateSustain.bind(this);
         this.updateRelease = this.updateRelease.bind(this);
-        this.handleActionChange = this.handleActionChange.bind(this);
+        this.updateReverbLength = this.updateReverbLength.bind(this);
         this.activateMenu = this.activateMenu.bind(this);
         this.state = {
             envelope: {
@@ -29,12 +34,23 @@ class ControlBoard extends React.Component {
                 speed: 1.0,
                 maxFreq: 130.81
             },
+            reverbParams: {
+                reverbLength: 1.0
+            },
             flowers: [],
             activeFlower: {
                 index: -1,
-                action: null
+                action: null,
+                offsetNormalX: 0.0,
+                offsetNormalY: 0.0
             }
         }
+    }
+
+    componentWillMount() {
+    }
+
+    componentDidMount() {
     }
 
     componentDidUpdate (prevProps, prevState, snapshot) {
@@ -46,77 +62,106 @@ class ControlBoard extends React.Component {
         return val > max ? max : val < min ? min : val;
     }
 
+    handleMouseMove = (event) => {
+        if (this.onMenu) return;
+        let flowers = [...this.state.flowers];
+        let flower;
+        let activeFLower = {};
+        let action = this.state.activeFlower.action
+        let index = this.state.activeFlower.index
+        let tempIndex = -1
+        let mouseX = event.clientX;
+        let mouseY = event.clientY;
+        let normalMouseX = event.clientX / this.props.width;
+        let normalMouseY = event.clientY / this.props.height;
+        let offSetNormalX = this.state.activeFlower.offsetNormalX
+        let offSetNormalY = this.state.activeFlower.offsetNormalY
+        if (action == null) {
+            for (let i = flowers.length - 1; i >= 0; i--) {
+                flower = flowers[i];
+                let flowerX = flower.normalX * this.props.width;
+                let flowerY = flower.normalY * this.props.height;
+                let distanceSqrd = Math.pow((mouseX - flowerX), 2) + Math.pow((mouseY - flowerY), 2)
+                if (distanceSqrd <= Math.pow(flower.radius, 2)) {
+                    tempIndex = i;
+                    break;
+                }
+            }
+            index = (tempIndex > -1) ? tempIndex : -1
+        } else if (index >= 0) {
+            flower = flowers[index];
+            let flowerX = flower.normalX * this.props.width;
+            let flowerY = flower.normalY * this.props.height;
+            if (action === 'add') {
+                flower.normalX = normalMouseX;
+                flower.normalY = normalMouseY;
+            }
+            if (action === 'move') {
+                flower.normalX = normalMouseX - offSetNormalX;
+                flower.normalY = normalMouseY - offSetNormalY;
+            }
+            if (action === 'resize') {
+                let radius = Math.hypot((flowerX - mouseX), (flowerY - mouseY));
+                flower.radius = this.clampValue(radius, 10, 100)
+            }
+            flowers[index] = flower;
+        }
+        activeFLower = {
+            action: action,
+            index: index,
+            offsetNormalX: offSetNormalX,
+            offsetNormalY: offSetNormalY
+        }
+        if (!deepEqual(flowers, this.state.flowers) || !deepEqual(activeFLower, this.state.activeFlower)) {
+            this.setState({
+                flowers: flowers,
+                activeFlower: activeFLower
+            })
+        }
+    }
+
     handleMouseDown = (event) => {
         if (this.onMenu) return;
         let mouseX = event.clientX
         let mouseY = event.clientY
-        let normalMouseX = event.clientX / this.props.windowDims.width;
-        let normalMouseY = event.clientY / this.props.windowDims.height;
+        let normalMouseX = event.clientX / this.props.width;
+        let normalMouseY = event.clientY / this.props.height;
         let flowers = [...this.state.flowers];
-        let index;
+        let flower;
+        let activeFLower = {}
+        let index = this.state.activeFlower.index;
         let action = null;
-        for (let i=flowers.length-1; i>=0; i--){
-            let flowerX = flowers[i].normalX * this.props.windowDims.width;
-            let flowerY = flowers[i].normalY * this.props.windowDims.height;
+        if (index > -1) {
+            flower = flowers[index]
+            let flowerX = flower.normalX * this.props.width;
+            let flowerY = flower.normalY * this.props.height;
             let distanceSqrd = Math.pow((mouseX - flowerX), 2) + Math.pow((mouseY - flowerY), 2)
-            if (distanceSqrd <= 400.0) {
-                index = i;
-                action = 'delete'
-                break;
-            } else if (distanceSqrd <= 1600.0){
-                index = i;
-                action = 'move'
-                break;
-            } else if (distanceSqrd <= 3600.0) {
-                index = i;
-                action = 'resize'
-                break;
+            if (distanceSqrd <= Math.pow((flower.radius * 0.35), 2)) {
+                action = 'delete';
+            } else if (distanceSqrd <= Math.pow((flower.radius * 0.7), 2)) {
+                action = 'move';
+            } else if (distanceSqrd <= Math.pow((flower.radius * 1.05), 2)) {
+                action = 'resize';
             }
-        }
-        if (action === null) {
+        } else {
             action = 'add';
-            flowers.push({'normalX': normalMouseX, 'normalY': normalMouseY, 'radius': 50, 'alpha': 0.3, 'fresh': true})
+            flower = {'normalX': normalMouseX, 'normalY': normalMouseY, 'radius': 50, 'alpha': 0.3, 'fresh': true}
+            flowers.push(flower)
             index = flowers.length - 1;
         }
         document.getElementById("control-board").addEventListener('mousemove', this.handleMouseMove)
-        console.log('down: ', action)
-        this.setState({
-            flowers: flowers,
-            activeFlower: {
-                action: action,
-                index: index
-            }
-        })
-    }
-
-    handleMouseMove = (event) => {
-        // if (this.state.activeFlower.index === null) return
-        if (this.state.flowers.length === 0) return
-        let action = this.state.activeFlower.action
-        let index = this.state.activeFlower.index
-        if (action === null || index < 0) {
-            return
+        activeFLower = {
+            action: action,
+            index: index,
+            offsetNormalX: normalMouseX - flower.normalX,
+            offsetNormalY: normalMouseY - flower.normalY
         }
-        let flowers = [...this.state.flowers];
-        let mouseX = event.clientX;
-        let mouseY = event.clientY;
-        let normalMouseX = event.clientX / this.props.windowDims.width;
-        let normalMouseY = event.clientY / this.props.windowDims.height;
-        let flower = flowers[index];
-        let flowerX = flower.normalX * this.props.windowDims.width;
-        let flowerY = flower.normalY * this.props.windowDims.height;
-        if (action === 'add' || action === 'move') {
-            flower.normalX = normalMouseX;
-            flower.normalY = normalMouseY;
+        if (!deepEqual(flowers, this.state.flowers) || !deepEqual(activeFLower, this.state.activeFlower)) {
+            this.setState({
+                flowers: flowers,
+                activeFlower: activeFLower
+            })
         }
-        if (action === 'resize') {
-            let radius = Math.hypot((flowerX - mouseX), (flowerY - mouseY));
-            flower.radius = this.clampValue(radius, 10, 100)
-        }
-        flowers[index] = flower;
-        this.setState({
-            flowers: flowers,
-        })
     }
 
     handleMouseUp = (event) => {
@@ -128,8 +173,9 @@ class ControlBoard extends React.Component {
         let mouseY = event.clientY;
         let flowers = [...this.state.flowers];
         let flower = flowers[index];
-        let flowerX = flowers[index].normalX * this.props.windowDims.width;
-        let flowerY = flowers[index].normalY * this.props.windowDims.height;
+        let activeFLower = {}
+        let flowerX = flowers[index].normalX * this.props.width;
+        let flowerY = flowers[index].normalY * this.props.height;
         if (action === 'add') {
             flower.fresh = false;
         }
@@ -139,14 +185,18 @@ class ControlBoard extends React.Component {
                 flowers.splice(index, 1);
             }
         }
-        this.setState({
-            flowers: flowers,
-            activeFlower: {
-                action: null,
-                index: -1
-            }
-        })
-        document.getElementById("control-board").removeEventListener('mousemove', this.handleMouseMove)
+        activeFLower = {
+            action: null,
+            index: index,
+            offsetNormalX: 0.0,
+            offsetNormalY: 0.0
+        }
+        if (!deepEqual(flowers, this.state.flowers) || !deepEqual(activeFLower, this.state.activeFlower)) {
+            this.setState({
+                flowers: flowers,
+                activeFlower: activeFLower
+            })
+        }
     }
 
     clearAll () {
@@ -156,45 +206,47 @@ class ControlBoard extends React.Component {
     updateSpeed (event) {
         let audioParams = this.state.audioParams
         audioParams.speed = parseFloat(event.target.value)
-        this.setState({audioParams: audioParams});
+        this.setState({audioParams});
     }
 
     updateMaxFreq (event) {
         let audioParams = this.state.audioParams
         audioParams.maxFreq = parseFloat(event.target.value)
-        this.setState({audioParams: audioParams});
+        this.setState({audioParams});
     }
 
     updateAttack (event) {
         let envelope = this.state.envelope
         envelope.attack = parseFloat(event.target.value)
-        this.setState({envelope: envelope});
+        this.setState({envelope});
     }
 
     updateDecay (event) {
         let envelope = this.state.envelope
         envelope.decay = parseFloat(event.target.value)
-        this.setState({envelope: envelope});
+        this.setState({envelope});
     }
 
     updateSustain (event) {
         let envelope = this.state.envelope
         envelope.sustain = parseFloat(event.target.value)
-        this.setState({envelope: envelope});
+        this.setState({envelope});
     }
 
     updateRelease (event) {
         let envelope = this.state.envelope
         envelope.release = parseFloat(event.target.value)
-        this.setState({envelope: envelope});
+        this.setState({envelope});
+    }
+
+    updateReverbLength (event) {
+        let reverbParams = this.state.reverbParams
+        reverbParams.reverbLength = parseFloat(event.target.value)
+        this.setState({reverbParams});
     }
 
     activateMenu (event) {
         this.onMenu = (event.type === "mouseover")
-    }
-
-    handleActionChange (event) {
-        this.setState({action: event.target.id})
     }
 
     menuDragStart(event) {
@@ -226,7 +278,7 @@ class ControlBoard extends React.Component {
 
     render() {
         return (
-            <div id={"control-board"} draggable={false} onDragOver={this.allowDropMenu} onDrop={this.dropMenu} onMouseDown={this.handleMouseDown} onMouseUp={this.handleMouseUp}>
+            <div id={"control-board"} draggable={false} onDragOver={this.allowDropMenu} onDrop={this.dropMenu} onMouseDown={this.handleMouseDown} onMouseUp={this.handleMouseUp} onMouseMove={this.handleMouseMove}>
                 <div className={"menu"} id={"adsr-menu"} draggable={true} onDragStart={this.menuDragStart} onDragEnd={this.menuDragEnd} onMouseOver={this.activateMenu} onMouseOut={this.activateMenu}>
                     <h1 className={"menu-header"} id={"adsr-menu-header"}>ADSR</h1>
                     <div className={"menu-content"} id={"adsr-menu-content"}>
@@ -243,14 +295,6 @@ class ControlBoard extends React.Component {
                 <div className={"menu"} id={"flower-menu"} draggable={true} onDragStart={this.menuDragStart} onDragEnd={this.menuDragEnd} onMouseOver={this.activateMenu} onMouseOut={this.activateMenu}>
                     <h1 className={"menu-header"} id={"flower-menu-header"}>Flowers</h1>
                     <div className={"menu-content"} id={"flower-menu-content"}>
-                        {/*<label htmlFor="add">Add</label><br></br>*/}
-                        {/*<input type="radio" id="add" name="action" value="add" checked={this.state.action === 'add'} onChange={this.handleActionChange}></input>*/}
-                        {/*<label htmlFor="move">Move</label><br></br>*/}
-                        {/*<input type="radio" id="move" name="action" value="move" checked={this.state.action === 'move'} onChange={this.handleActionChange}></input>*/}
-                        {/*<label htmlFor="resize">Resize</label><br></br>*/}
-                        {/*<input type="radio" id="resize" name="action" value="resize" checked={this.state.action === 'resize'} onChange={this.handleActionChange}></input>*/}
-                        {/*<label htmlFor="delete">Delete</label><br></br>*/}
-                        {/*<input type="radio" id="delete" name="action" value="delete" checked={this.state.action === 'delete'} onChange={this.handleActionChange}></input>*/}
                         <button onClick={this.clearAll}>Clear</button>
                     </div>
                 </div>
@@ -263,11 +307,31 @@ class ControlBoard extends React.Component {
                         <input type="range" min="0" max="3" step="0.1" defaultValue="1.0" className="slider" id="speed-slider" onChange={this.updateSpeed} ></input>
                     </div>
                 </div>
-                <Animation flowers={this.state.flowers}
-                           activeFlower={this.state.activeFlower}
-                           windowDims={this.props.windowDims}
-                           audioParams={this.state.audioParams}
-                           envelope={this.state.envelope}
+                <div className={"menu"} id={"reverb-menu"} draggable={true} onDragStart={this.menuDragStart} onDragEnd={this.menuDragEnd} onMouseOver={this.activateMenu} onMouseOut={this.activateMenu}>
+                    <h1 className={"menu-header"} id={"reberb-menu-header"}>Reverb</h1>
+                    <div className={"menu-content"} id={"reverb-menu-content"}>
+                        <p>Buffer Length</p>
+                        <input type="range" min="0.1" max="2.0" step="0.1" defaultValue="1.0" className="slider" id="reverb-length-slider" onChange={this.updateReverbLength} ></input>
+                    </div>
+                </div>
+                <SynthEngine speed={this.state.audioParams.speed}
+                             maxFreq={this.state.audioParams.maxFreq}
+                             attack={this.state.envelope.attack}
+                             decay={this.state.envelope.decay}
+                             sustain={this.state.envelope.sustain}
+                             release={this.state.envelope.release}
+                             reverbLength={this.state.reverbParams.reverbLength}
+                             ref={instance => { this.synthEngine = instance; }}
+                />
+                <Animation width={this.props.width}
+                           height={this.props.height}
+                           speed={this.state.audioParams.speed}
+                           flowers={this.state.flowers}
+                           index={this.state.activeFlower.index}
+                           action={this.state.activeFlower.action}
+                           offsetNormalX={this.state.activeFlower.offsetNormalX}
+                           offsetNormalY={this.state.activeFlower.offsetNormalY}
+                           playNote={(flowerY, radius, speed) => this.synthEngine.playNote(flowerY, radius, speed) }
                 />
             </div>
         )

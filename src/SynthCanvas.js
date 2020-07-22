@@ -5,80 +5,59 @@ class SynthCanvas extends React.Component {
 
     constructor(props){
         super(props);
-        this.handleMouseMove = this.handleMouseMove.bind(this);
         this.canvasRef = React.createRef();
         this.image = new Image();
-        this.state = {
-            canvasMouse: {
-                mouseX: 0,
-                mouseY: 0,
-
-            }
-        }
     }
 
-    componentDidMount () {
+    componentWillMount() {
         this.image.src = sunflower;
     }
 
-    handleMouseMove = (event) => {
-        this.setState({
-            canvasMouse: {
-                mouseX: event.clientX,
-                mouseY: event.clientY
-            }
-        })
+    componentDidMount () {
     }
 
-    drawCircles(ctx, x, y, ) {
+    drawCircles(ctx, x, y, r) {
         ctx.globalAlpha = 0.3;
         ctx.beginPath()
-        ctx.arc(x, y, 60, 0, 2 * Math.PI)
+        ctx.arc(x, y, r * 1.05, 0, 2 * Math.PI)
         ctx.fillStyle = 'yellow'
         ctx.fill()
         ctx.closePath()
         ctx.beginPath()
-        ctx.arc(x, y, 40, 0, 2 * Math.PI)
+        ctx.arc(x, y, r * 0.7, 0, 2 * Math.PI)
         ctx.fillStyle = 'green'
         ctx.fill()
         ctx.closePath()
         ctx.beginPath()
-        ctx.arc(x, y, 20, 0, 2 * Math.PI)
+        ctx.arc(x, y, r * 0.35, 0, 2 * Math.PI)
         ctx.fillStyle = 'red'
         ctx.fill()
         ctx.closePath()
         ctx.globalAlpha = 1.0;
     }
 
-    componentDidUpdate (prevProps, prevState, snapshot) {
-        const playhead = this.props.playhead;
-        const flowers = this.props.flowers;
-        const canvas = this.canvasRef.current;
+    drawFrame(playhead, speed, flowers, canvas, width, index) {
         const ctx = canvas.getContext('2d');
-        const width = this.props.windowDims.width;
         const height = canvas.height;
-        const index = this.props.activeFlower.index;
-        const mouseX = this.state.canvasMouse.mouseX;
-        const mouseY = this.state.canvasMouse.mouseY;
         ctx.clearRect(0, 0, width, height);
         ctx.save();
-        let hovering = false;
         for (let i = 0; i < flowers.length; i++) {
             let flower = flowers[i];
-            let x = flower.normalX * width;
-            let y = flower.normalY * height;
-            let r = flower.radius;
-            let distanceSqrd = Math.pow((mouseX - x), 2) + Math.pow((mouseY - y), 2)
-            if (i === index || (distanceSqrd <= 3600 && !hovering)) {
-                ctx.globalAlpha = 0.3
-                hovering = true;
+            let flowerX = flower.normalX * width;
+            let flowerY = flower.normalY * height;
+            //Check for note
+            if (flower.normalX * width <= playhead && playhead < flower.normalX * width + speed) {
+                this.props.playNote(flower.normalY, flower.radius, speed)
+            }
+            if (i === index) {
+                ctx.globalAlpha = 0.3;
+                ctx.drawImage(this.image, flowerX - flower.radius, flowerY - flower.radius, flower.radius * 2, flower.radius * 2);
+                if (!flower.fresh) {
+                   this.drawCircles(ctx, flowerX, flowerY, flower.radius)
+                }
             } else {
                 ctx.globalAlpha = 1.0
-            }
-            ctx.drawImage(this.image, x - r, y - r, r * 2, r * 2);
-            if ((i === index || (distanceSqrd <= 3600 && hovering)) && !flower.fresh) {
-                console.log(flower.fresh)
-                this.drawCircles(ctx, x, y)
+                ctx.drawImage(this.image, flowerX - flower.radius, flowerY - flower.radius, flower.radius * 2, flower.radius * 2);
             }
         }
         ctx.globalAlpha = 1.0;
@@ -90,13 +69,24 @@ class SynthCanvas extends React.Component {
         ctx.restore();
     }
 
+    componentDidUpdate (prevProps, prevState, snapshot) {
+        this.drawFrame(
+            this.props.playhead,
+            this.props.speed,
+            this.props.flowers,
+            this.canvasRef.current,
+            this.props.width,
+            this.props.index
+        )
+    }
+
     componentWillUnmount () {
     }
 
     render() {
         return (
             <div>
-                <canvas id="synth-canvas" width={this.props.windowDims.width} height={this.props.windowDims.height} ref={this.canvasRef} onMouseMove={this.handleMouseMove} />
+                <canvas id="synth-canvas" width={this.props.width} height={this.props.height} ref={this.canvasRef} />
             </div>
         )
     }

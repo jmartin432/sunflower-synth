@@ -1,15 +1,19 @@
-import React, {useState} from 'react';
+import React from 'react';
 import './ControlBoard.css';
 import SynthCanvas from './SynthCanvas';
-import MakeNotes from './MakeNotes';
+
+let deepEqual = require('deep-equal')
 
 class Animation extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
             playhead: 0.0
-        };
+        }
+        this.updatePlayhead = this.updatePlayhead.bind(this);
+        this.resetPlayhead = this.resetPlayhead.bind(this);
         this.updateAnimationState = this.updateAnimationState.bind(this);
+        this.render = this.render.bind(this)
     }
 
     componentDidMount() {
@@ -20,8 +24,8 @@ class Animation extends React.Component {
     }
 
     updateAnimationState() {
-        this.setState(prevState => ({playhead: prevState.playhead + this.props.audioParams.speed}));
-        if (this.state.playhead >= this.props.windowDims.width) {
+        this.setState(prevState => ({playhead: prevState.playhead + this.props.speed}));
+        if (this.state.playhead >= this.props.width) {
             this.setState({playhead: 0})
         }
         this.rAF = requestAnimationFrame(this.updateAnimationState);
@@ -31,28 +35,29 @@ class Animation extends React.Component {
         cancelAnimationFrame(this.rAF);
     }
 
-    render() {
+    updatePlayhead () {
+        this.playhead += this.props.audioParams.speed
+    }
 
-        return [
+    resetPlayhead () {
+        this.playhead = 0.0
+    }
+
+    render() {
+        return (
             <SynthCanvas
-                key={0}
                 playhead={this.state.playhead}
-                windowDims={this.props.windowDims}
-                audioParams={this.props.audioParams}
-                envelope={this.props.envelope}
+                width={this.props.width}
+                height={this.props.height}
+                speed={this.props.speed}
                 flowers={this.props.flowers}
-                activeFlower={this.props.activeFlower}
-            />,
-            <MakeNotes
-                key={1}
-                playhead={this.state.playhead}
-                windowDims={this.props.windowDims}
-                audioParams={this.props.audioParams}
-                envelope={this.props.envelope}
-                flowers={this.props.flowers}
-                activeFlower={this.props.activeFlower}
+                index={this.props.index}
+                action={this.props.action}
+                offsetNormalX={this.props.offsetNormalX}
+                offsetNormalY={this.props.offsetNormalY}
+                playNote={this.props.playNote}
             />
-        ]
+        )
     }
 }
 
