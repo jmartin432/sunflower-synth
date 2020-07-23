@@ -8,10 +8,7 @@ class Animation extends React.Component {
         this.state = {
             playhead: 0.0
         }
-        this.updatePlayhead = this.updatePlayhead.bind(this);
-        this.resetPlayhead = this.resetPlayhead.bind(this);
         this.updateAnimationState = this.updateAnimationState.bind(this);
-        this.render = this.render.bind(this)
     }
 
     componentDidMount() {
@@ -31,14 +28,6 @@ class Animation extends React.Component {
 
     componentWillUnmount() {
         cancelAnimationFrame(this.rAF);
-    }
-
-    updatePlayhead () {
-        this.playhead += this.props.audioParams.speed
-    }
-
-    resetPlayhead () {
-        this.playhead = 0.0
     }
 
     render() {

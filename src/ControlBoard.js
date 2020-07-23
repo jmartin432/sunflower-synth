@@ -184,6 +184,7 @@ class ControlBoard extends React.Component {
             if (distance < 20.0) {
                 flowers.splice(index, 1);
             }
+            index = null;
         }
         activeFLower = {
             action: null,
