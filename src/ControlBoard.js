@@ -15,8 +15,10 @@ class ControlBoard extends React.Component {
         this.handleMouseMove = this.handleMouseMove.bind(this);
         this.handleMouseUp = this.handleMouseUp.bind(this);
         this.clearAll = this.clearAll.bind(this);
+        this.updateMasterGain = this.updateMasterGain.bind(this);
         this.updateSpeed = this.updateSpeed.bind(this);
         this.updateMaxFreq = this.updateMaxFreq.bind(this);
+        this.updateNoteLength = this.updateNoteLength.bind(this);
         this.updateAttack = this.updateAttack.bind(this);
         this.updateDecay = this.updateDecay.bind(this);
         this.updateSustain = this.updateSustain.bind(this);
@@ -31,8 +33,10 @@ class ControlBoard extends React.Component {
                 release: 0.1,
             },
             audioParams: {
+                masterGain: 1.0,
                 speed: 1.0,
-                maxFreq: 130.81
+                maxFreq: 130.81,
+                noteLength: 1.0
             },
             reverbParams: {
                 reverbLength: 1.0
@@ -204,6 +208,12 @@ class ControlBoard extends React.Component {
         this.setState({flowers: []});
     }
 
+    updateMasterGain (event) {
+        let audioParams = this.state.audioParams
+        audioParams.masterGain = parseFloat(event.target.value)
+        this.setState({audioParams});
+    }
+
     updateSpeed (event) {
         let audioParams = this.state.audioParams
         audioParams.speed = parseFloat(event.target.value)
@@ -213,6 +223,12 @@ class ControlBoard extends React.Component {
     updateMaxFreq (event) {
         let audioParams = this.state.audioParams
         audioParams.maxFreq = parseFloat(event.target.value)
+        this.setState({audioParams});
+    }
+
+    updateNoteLength (event) {
+        let audioParams = this.state.audioParams
+        audioParams.noteLength = parseFloat(event.target.value)
         this.setState({audioParams});
     }
 
@@ -302,10 +318,14 @@ class ControlBoard extends React.Component {
                 <div className={"menu"} id={"params-menu"} draggable={true} onDragStart={this.menuDragStart} onDragEnd={this.menuDragEnd} onMouseOver={this.activateMenu} onMouseOut={this.activateMenu}>
                     <h1 className={"menu-header"} id={"params-menu-header"}>Parameters</h1>
                     <div className={"menu-content"} id={"params-menu-content"}>
+                        <p>Master Gain</p>
+                        <input type="range" min="0.0" max="1.0" step="0.01" defaultValue="1.0" className="slider" id="master-gain-slider" onChange={this.updateMasterGain} ></input>
                         <p>Max Frequency</p>
                         <input type="range" min="16.35" max="523.25" step="0.1" defaultValue="130.81" className="slider" id="maxFreq-slider" onChange={this.updateMaxFreq} ></input>
                         <p>Speed</p>
                         <input type="range" min="0" max="3" step="0.1" defaultValue="1.0" className="slider" id="speed-slider" onChange={this.updateSpeed} ></input>
+                        <p>Note Length</p>
+                        <input type="range" min="0.5" max="3" step="0.01" defaultValue="1.0" className="slider" id="note-length-slider" onChange={this.updateNoteLength} ></input>
                     </div>
                 </div>
                 <div className={"menu"} id={"reverb-menu"} draggable={true} onDragStart={this.menuDragStart} onDragEnd={this.menuDragEnd} onMouseOver={this.activateMenu} onMouseOut={this.activateMenu}>
@@ -315,8 +335,10 @@ class ControlBoard extends React.Component {
                         <input type="range" min="0.1" max="2.0" step="0.1" defaultValue="1.0" className="slider" id="reverb-length-slider" onChange={this.updateReverbLength} ></input>
                     </div>
                 </div>
-                <SynthEngine speed={this.state.audioParams.speed}
+                <SynthEngine masterGain={this.state.audioParams.masterGain}
+                             speed={this.state.audioParams.speed}
                              maxFreq={this.state.audioParams.maxFreq}
+                             noteLength={this.state.audioParams.noteLength}
                              attack={this.state.envelope.attack}
                              decay={this.state.envelope.decay}
                              sustain={this.state.envelope.sustain}
@@ -332,7 +354,7 @@ class ControlBoard extends React.Component {
                            action={this.state.activeFlower.action}
                            offsetNormalX={this.state.activeFlower.offsetNormalX}
                            offsetNormalY={this.state.activeFlower.offsetNormalY}
-                           playNote={(flowerY, radius, speed) => this.synthEngine.playNote(flowerY, radius, speed) }
+                           playNote={(flowerY, radius) => this.synthEngine.playNote(flowerY, radius) }
                 />
             </div>
         )

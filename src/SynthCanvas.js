@@ -47,7 +47,7 @@ class SynthCanvas extends React.Component {
             let flowerY = flower.normalY * height;
             //Check for note
             if (flower.normalX * width <= playhead && playhead < flower.normalX * width + speed) {
-                this.props.playNote(flower.normalY, flower.radius, speed)
+                this.props.playNote(flower.normalY, flower.radius)
             }
             if (i === index) {
                 ctx.globalAlpha = 0.3;

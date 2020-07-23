@@ -8,7 +8,6 @@ class SynthEngine extends React.Component {
         // this.offlineAudioContext = new (window.OfflineAudioContext || window.webkitOfflineAudioContext)()
         this.masterGain = this.audioContext.createGain();
         this.masterGain.connect(this.audioContext.destination)
-        this.masterGain.gain.setValueAtTime(1.0, this.audioContext.currentTime)
         this.reverb = {};
         this.state = {
             waveform: null,
@@ -80,12 +79,13 @@ class SynthEngine extends React.Component {
     }
 
     playNote = function(y, r, s) {
-        console.log('note: ', y, r, s)
+        console.log('note: ', y, r)
         let pitch = 16.35 * Math.pow(this.props.maxFreq / 16.35, (1 - y))
         let amplitude = r / 100.0;
         // NewValue = (((OldValue - OldMin) * (NewMax - NewMin)) / (OldMax - OldMin)) + NewMin
         // mapping 0 - 3 speed slider to 3.5 - .5 notelength, fast speed shorter notes
-        let noteLength = -1.0 * ((((s - 0.0) * (-0.5 - -3.5)) / (3.0 - 0.0)) + -3.5)
+        //let noteLength = -1.0 * ((((s - 0.0) * (-0.5 - -3.5)) / (3.0 - 0.0)) + -3.5)
+        let noteLength = this.props.noteLength
         const now = this.audioContext.currentTime
         const envelopeGain = this.audioContext.createGain()
         envelopeGain.gain.setValueAtTime(0.0, now)
@@ -133,6 +133,9 @@ class SynthEngine extends React.Component {
     componentDidUpdate (prevProps, prevState, snapshot) {
         if (prevProps.reverbLength !== this.props.reverbLength) {
             this.updateReverb(this.props.reverbLength)
+        }
+        if (prevProps.masterGain !== this.props.masterGain) {
+            this.masterGain.gain.linearRampToValueAtTime(this.props.masterGain, this.audioContext.currentTime + 0.1)
         }
     }
 
