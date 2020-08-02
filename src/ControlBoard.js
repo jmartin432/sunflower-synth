@@ -293,6 +293,11 @@ class ControlBoard extends React.Component {
         event.preventDefault()
     }
 
+    updateDraggability(event, id, status) {
+        let menu = document.getElementById(id)
+        menu.setAttribute('draggable', status)
+    }
+
     render() {
         return (
             <div id={"control-board"} draggable={false} onDragOver={this.allowDropMenu} onDrop={this.dropMenu} onMouseDown={this.handleMouseDown} onMouseUp={this.handleMouseUp} onMouseMove={this.handleMouseMove}>
@@ -300,39 +305,39 @@ class ControlBoard extends React.Component {
                     <h1 className={"menu-header"} id={"adsr-menu-header"}>ADSR</h1>
                     <div className={"menu-content"} id={"adsr-menu-content"}>
                         <p>Attack</p>
-                        <input type="range" min=".090" max="1.0" step=".001" defaultValue=".1" className="slider" id="attack-slider" onChange={this.updateAttack} ></input>
+                        <input type="range" min=".090" max="1.0" step=".001" defaultValue=".1" className="slider" id="attack-slider" onMouseEnter={(event) => this.updateDraggability(event, "adsr-menu", false)} onMouseLeave={(event) => this.updateDraggability(event, "adsr-menu", true)} onChange={this.updateAttack} />
                         <p>Decay</p>
-                        <input type="range" min=".090" max="1.0" step=".001" defaultValue=".1" className="slider" id="decay-slider" onChange={this.updateDecay} ></input>
+                        <input type="range" min=".090" max="1.0" step=".001" defaultValue=".1" className="slider" id="decay-slider" onMouseEnter={(event) => this.updateDraggability(event, "adsr-menu", false)} onMouseLeave={(event) => this.updateDraggability(event, "adsr-menu", true)} onChange={this.updateDecay} />
                         <p>Sustain</p>
-                        <input type="range" min="0" max="1.0" step="0.01" defaultValue="1.0" className="slider" id="sustain-slider" onChange={this.updateSustain} ></input>
+                        <input type="range" min="0" max="1.0" step="0.01" defaultValue="1.0" className="slider" id="sustain-slider" onMouseEnter={(event) => this.updateDraggability(event, "adsr-menu", false)} onMouseLeave={(event) => this.updateDraggability(event, "adsr-menu", true)} onChange={this.updateSustain} ></input>
                         <p>Release</p>
-                        <input type="range" min=".090" max="1.0" step=".001" defaultValue=".1" className="slider" id="release-slider" onChange={this.updateRelease} ></input>
+                        <input type="range" min=".090" max="1.0" step=".001" defaultValue=".1" className="slider" id="release-slider" onMouseEnter={(event) => this.updateDraggability(event, "adsr-menu", false)} onMouseLeave={(event) => this.updateDraggability(event, "adsr-menu", true)} onChange={this.updateRelease} ></input>
                     </div>
                 </div>
                 <div className={"menu"} id={"flower-menu"} draggable={true} onDragStart={this.menuDragStart} onDragEnd={this.menuDragEnd} onMouseOver={this.activateMenu} onMouseOut={this.activateMenu}>
                     <h1 className={"menu-header"} id={"flower-menu-header"}>Flowers</h1>
                     <div className={"menu-content"} id={"flower-menu-content"}>
-                        <button onClick={this.clearAll}>Clear</button>
+                        <button onMouseEnter={(event) => this.updateDraggability(event, "flower-menu", false)} onMouseLeave={(event) => this.updateDraggability(event, "flower-menu", true)} onClick={this.clearAll}>Clear</button>
                     </div>
                 </div>
                 <div className={"menu"} id={"params-menu"} draggable={true} onDragStart={this.menuDragStart} onDragEnd={this.menuDragEnd} onMouseOver={this.activateMenu} onMouseOut={this.activateMenu}>
                     <h1 className={"menu-header"} id={"params-menu-header"}>Parameters</h1>
                     <div className={"menu-content"} id={"params-menu-content"}>
                         <p>Master Gain</p>
-                        <input type="range" min="0.0" max="1.0" step="0.01" defaultValue="1.0" className="slider" id="master-gain-slider" onChange={this.updateMasterGain} ></input>
+                        <input type="range" min="0.0" max="1.0" step="0.01" defaultValue="1.0" className="slider" id="master-gain-slider" onMouseEnter={(event) => this.updateDraggability(event, "params-menu", false)} onMouseLeave={(event) => this.updateDraggability(event, "params-menu", true)} onChange={this.updateMasterGain} ></input>
                         <p>Max Frequency</p>
-                        <input type="range" min="16.35" max="523.25" step="0.1" defaultValue="130.81" className="slider" id="maxFreq-slider" onChange={this.updateMaxFreq} ></input>
+                        <input type="range" min="16.35" max="523.25" step="0.1" defaultValue="130.81" className="slider" id="maxFreq-slider" onMouseEnter={(event) => this.updateDraggability(event, "params-menu", false)} onMouseLeave={(event) => this.updateDraggability(event, "params-menu", true)} onChange={this.updateMaxFreq} ></input>
                         <p>Speed</p>
-                        <input type="range" min="0" max="3" step="0.1" defaultValue="1.0" className="slider" id="speed-slider" onChange={this.updateSpeed} ></input>
+                        <input type="range" min="0" max="3" step="0.1" defaultValue="1.0" className="slider" id="speed-slider" onMouseEnter={(event) => this.updateDraggability(event, "params-menu", false)} onMouseLeave={(event) => this.updateDraggability(event, "params-menu", true)} onChange={this.updateSpeed} ></input>
                         <p>Note Length</p>
-                        <input type="range" min="0.5" max="3" step="0.01" defaultValue="1.0" className="slider" id="note-length-slider" onChange={this.updateNoteLength} ></input>
+                        <input type="range" min="0.5" max="3" step="0.01" defaultValue="1.0" className="slider" id="note-length-slider" onMouseEnter={(event) => this.updateDraggability(event, "params-menu", false)} onMouseLeave={(event) => this.updateDraggability(event, "params-menu", true)} onChange={this.updateNoteLength} ></input>
                     </div>
                 </div>
                 <div className={"menu"} id={"reverb-menu"} draggable={true} onDragStart={this.menuDragStart} onDragEnd={this.menuDragEnd} onMouseOver={this.activateMenu} onMouseOut={this.activateMenu}>
                     <h1 className={"menu-header"} id={"reberb-menu-header"}>Reverb</h1>
                     <div className={"menu-content"} id={"reverb-menu-content"}>
                         <p>Buffer Length</p>
-                        <input type="range" min="0.1" max="2.0" step="0.1" defaultValue="1.0" className="slider" id="reverb-length-slider" onChange={this.updateReverbLength} ></input>
+                        <input type="range" min="0.1" max="2.0" step="0.1" defaultValue="1.0" className="slider" id="reverb-length-slider" onMouseEnter={(event) => this.updateDraggability(event, "reverb-menu", false)} onMouseLeave={(event) => this.updateDraggability(event, "reverb-menu", true)} onChange={this.updateReverbLength} ></input>
                     </div>
                 </div>
                 <SynthEngine masterGain={this.state.audioParams.masterGain}

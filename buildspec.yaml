@@ -1,0 +1,13 @@
+version: 0.1
+
+phases:
+  build:
+    commands:
+      - npm install
+      - npm run webpack
+artifacts:
+  files:
+    - build/*
+    - build/static/css/*
+    - build/static/js/*
+    - build/static/media/*
