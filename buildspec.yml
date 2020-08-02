@@ -7,7 +7,7 @@ phases:
       - npm run webpack
 artifacts:
   files:
-    - public/build/*
+    - public/dist/*
     - public/index.html
     - public/favicon.ico
     - public/logo192.png
