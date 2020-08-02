@@ -7,7 +7,9 @@ phases:
       - npm run webpack
 artifacts:
   files:
-    - build/*
-    - build/static/css/*
-    - build/static/js/*
-    - build/static/media/*
+    - public/build/*
+    - public/index.html
+    - public/favicon.ico
+    - public/logo192.png
+    - public/manifest.json
+    - public/robot.txt
