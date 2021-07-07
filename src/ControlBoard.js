@@ -4,13 +4,13 @@ import Animation from "./Animation";
 import SynthEngine from "./SynthEngine";
 
 let deepEqual = require('deep-equal')
-
+flock-menu,1109,29,166,29
 
 class ControlBoard extends React.Component {
 
     constructor(props){
         super(props);
-        this.onMenu = null
+        this.onMenu = null;
         this.handleMouseDown = this.handleMouseDown.bind(this);
         this.handleMouseMove = this.handleMouseMove.bind(this);
         this.handleMouseUp = this.handleMouseUp.bind(this);
