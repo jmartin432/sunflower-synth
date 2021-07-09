@@ -48,3 +48,4 @@ class Animation extends React.Component {
 }
 
 export default Animation;
+
