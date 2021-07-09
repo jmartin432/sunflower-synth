@@ -1,0 +1,70 @@
+#control-board {
+  background-image: url(static/swirly.jpg);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  z-index: 10;
+}
+
+.menu {
+  position: fixed;
+  width: 150px;
+  border: 2px solid blueviolet;
+  border-radius: 5px;
+  padding: 5px;
+  text-align: center;
+  z-index: 20;
+}
+
+.menu-header {
+  margin: 3px 0px 3px 0px;
+  font-size: 20px;
+}
+
+.menu-content {
+  display: none;
+}
+
+.menu:hover .menu-content {
+  display: block;
+}
+
+#adsr-menu {
+  top: 0;
+  left: 0;
+}
+
+#flower-menu {
+  top: 0;
+  left: 170px;
+}
+
+#params-menu {
+  top: 0;
+  left: 340px;
+}
+
+#reverb-menu {
+  top: 0;
+  left: 510px;
+}
+
+#synth-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 0;
+}
+
+input {
+  display: block;
+  margin: 0 auto;
+}
+
+p, label{
+  font-size: 10px;
+}
+
+#menu p {
+  margin: 10px 0px 2px 0px;
+}
