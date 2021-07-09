@@ -15,7 +15,13 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "webpack": "webpack",
+    "webpack-watch": "webpack --watch",
+    "ws": "ws -d public/",
+    "upload-files": "sh scripts/upload-files.sh",
+    "dev-deploy": "aws lambda invoke --function-name static-sites-pipeline-deploy-lambda --invocation-type Event --cli-binary-format raw-in-base64-out --payload '{ \"app-name\": \"sunflower-synth\", \"environment\": \"dev\" }' response.json",
+    "prod-deploy": "aws lambda invoke --function-name static-sites-pipeline-deploy-lambda --invocation-type Event --cli-binary-format raw-in-base64-out --payload '{ \"app-name\": \"sunflower-synth\", \"environment\": \"prod\" }' response.json"
   },
   "eslintConfig": {
     "extends": [
