@@ -2,52 +2,26 @@
   "name": "sunflower-synth",
   "version": "0.1.0",
   "private": true,
-  "author": "Justin L. Martin (info@justinlmartin.com)",
-  "license": "ISC",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/jmartin432/sunflower-synth.git"
+  "dependencies": {
+    "@testing-library/jest-dom": "^5.14.1",
+    "@testing-library/react": "^11.2.7",
+    "@testing-library/user-event": "^12.8.3",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "react-scripts": "4.0.3",
+    "web-vitals": "^1.1.2"
   },
-  "bugs": {
-    "url": "https://github.com/jmartin432/sunflower-synth/issues"
-  },
-  "homepage": "https://github.com/jmartin432/sunflower-synth#readme",
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject",
-    "webpack": "webpack",
-    "webpack-watch": "webpack --watch",
-    "ws": "ws -d public/",
-    "upload-files": "sh scripts/upload-files.sh",
-    "dev-deploy": "aws lambda invoke --function-name static-sites-pipeline-deploy-lambda --invocation-type Event --cli-binary-format raw-in-base64-out --payload '{ \"app-name\": \"sunflower-synth\", \"environment\": \"dev\" }' response.json",
-    "prod-deploy": "aws lambda invoke --function-name static-sites-pipeline-deploy-lambda --invocation-type Event --cli-binary-format raw-in-base64-out --payload '{ \"app-name\": \"sunflower-synth\", \"environment\": \"prod\" }' response.json"
-  },
-  "dependencies": {
-    "@babel/core": "7.11.0",
-    "@testing-library/jest-dom": "4.2.4",
-    "@testing-library/react": "9.5.0",
-    "@testing-library/user-event": "7.2.1",
-    "babel-loader": "8.1.0",
-    "babel-preset-react": "6.24.1",
-    "deep-equal": "2.0.3",
-    "react": "16.13.1",
-    "react-dom": "16.13.1",
-    "react-p5": "1.3.2",
-    "react-scripts": "3.4.1",
-    "save-dev": "0.0.1-security",
-    "webpack": "4.44.1",
-    "webpack-cli": "3.3.12"
-  },
-  "devDependencies": {
-    "@babel/plugin-proposal-class-properties": "7.10.4",
-    "css-loader": "4.2.0",
-    "file-loader": "6.0.0",
-    "style-loader": "1.2.1"
+    "eject": "react-scripts eject"
   },
   "eslintConfig": {
-    "extends": "react-app"
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
   },
   "browserslist": {
     "production": [

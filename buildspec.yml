@@ -10,6 +10,6 @@ artifacts:
     - public/dist/*
     - public/index.html
     - public/favicon.ico
-    - public/logo192.png
+    - public/clubIcon200.png
     - public/manifest.json
     - public/robot.txt

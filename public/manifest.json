@@ -1,6 +1,6 @@
 {
-  "short_name": "Sunflower Synth",
-  "name": "Sunflower Synth Manifest",
+  "short_name": "React App",
+  "name": "Create React App Sample",
   "icons": [
     {
       "src": "favicon.ico",
@@ -8,9 +8,9 @@
       "type": "image/x-icon"
     },
     {
-      "src": "logo192.png",
+      "src": "clubIcon200.png",
       "type": "image/png",
-      "sizes": "192x192"
+      "sizes": "200x200"
     }
   ],
   "start_url": ".",
