@@ -11,8 +11,8 @@
     "react-scripts": "4.0.3",
     "web-vitals": "^1.1.2",
     "save-dev": "0.0.1-security",
-    "web-vitals": "^1.1.2",
-    "webpack-cli": "^4.7.2"
+    "webpack-cli": "^4.7.2",
+    "deep-equal": "2.0.5"
   },
   "scripts": {
     "start": "react-scripts start",
