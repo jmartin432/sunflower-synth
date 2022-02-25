@@ -9,7 +9,9 @@ artifacts:
   files:
     - public/dist/*
     - public/index.html
-    - public/favicon.ico
-    - public/clubIcon200.png
+    - public/favicon-16x16.png
+    - public/favicon-32x32.png
+    - public/favicon-96x96.png
+    - public/apple-touch-icon.png
     - public/manifest.json
     - public/robot.txt
