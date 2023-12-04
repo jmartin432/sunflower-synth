@@ -21,7 +21,7 @@ jobs:
         run: yarn build
 
       - name: Sync Source
-        run: aws s3 sync ./dist s3://${{ secrets.S3_BUCKET }} --delete
+        run: aws s3 sync ./build s3://${{ secrets.S3_BUCKET }} --delete
 
       - name: Create Invalidation
         run: aws cloudfront create-invalidation --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} --paths "/"
